@@ -1,0 +1,38 @@
+{
+    "extName" : {
+        "message" : "Buildbot Button",
+        "description" : "Name of the extension"
+    },
+    "extDescription" : {
+        "message" : "Shows the current status of a buildbot instance.",
+        "description" : "Description of the extension"
+    },
+    "extOfflineTitle" : {
+        "message" : "Buildbot offline",
+        "description" : "Buildbot icon title"
+    },
+    "extOnlineTitle" : {
+        "message" : "Buildbot online",
+        "description" : "Buildbot icon title"
+    },
+    "extDateLabel" : {
+        "message" : "Fetched:",
+        "description" : "Label for date field in popup"
+    },
+    "extBuildersLabel" : {
+        "message" : "Builders",
+        "description" : "Label for builders link in popup"
+    },
+    "extWaterfallLabel" : {
+        "message" : "Waterfall",
+        "description" : "Label for waterfall link in popup"
+    },
+    "extConsoleLabel" : {
+        "message" : "Console",
+        "description" : "Label for console link in popup"
+    },
+    "extEmptyLabel" : {
+        "message" : "Unknown buildbot URL. See options.",
+        "description" : "Label for prompt in popup."
+    }
+}

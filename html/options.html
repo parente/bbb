@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Buildbot Button Options</title>
+    <link rel="stylesheet" type="text/css" href="../css/options.css" />
+    <script type="application/javascript" src="../js/options.js"></script>
+  </head>
+  <body>
+    <div class="box">
+      <h1>Buildbot Button Options</h1>
+      <label for="baseUrl">Base URL</label>
+      <input type="text" id="baseUrl" /><br clear="all"/>
+      <label for="frequency">Frequency</label>
+      <input type="text" id="frequency" /><br clear="all"/>
+      <div class="actions">
+        <span id="status" style="visibility: hidden;">Options saved</span>
+        <button type="button" onclick="onSave()">Save</button>
+        <button type="reset">Reset</button>
+      </div>
+    </div>
+  </body>
+</html>
