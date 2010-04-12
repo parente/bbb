@@ -39,6 +39,10 @@ body.offline {
     background-color: pink;
 }
 
+#builders .warnings {
+    background-color: orange;
+}
+
 #builders .offline {
     opacity: 0.25;
 }

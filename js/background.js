@@ -1,7 +1,8 @@
 var baseUrl = null;
-var buildbot = {};
 var online = false;
-var token = null;
+var buildbot = {};
+var _token = null;
+var _fetch = {};
 
 function unserialize() {
     try {
@@ -9,19 +10,21 @@ function unserialize() {
         buildbot = JSON.parse(json);
     } catch(e) {
         // no previous builder info
-        buildbot.builders = [];
+        buildbot.builders = {};
+        buildbot.lastBuild = {};
         buildbot.date = (new Date()).toString();
     }
 }
 
 function serialize() {
     var json = JSON.stringify(buildbot);
+    console.log(json);
     localStorage['buildbot'] = json;
 }
 
 function updateStatus() {
     // set the button title
-    var title = {};
+    var title = {}, key, count;
     if(online) {
         title.title = chrome.i18n.getMessage('extOnlineTitle');
     } else {
@@ -29,29 +32,32 @@ function updateStatus() {
     }
     chrome.browserAction.setTitle(title);
     // set the badge text
-    var fails = buildbot.builders.filter(function(item) {
-       return item.last.className.search('failure') > -1;
-    });
-    if(fails.length) {
-        var badge = {text : String(fails.length)};
+    var fails = 0;
+    for(key in buildbot.lastBuild) {
+        fails += (buildbot.lastBuild[key].builds['-1'].results) ? 1 : 0;
+    }
+    if(fails > 0) {
+        var badge = {text : String(fails)};
         chrome.browserAction.setBadgeText(badge);
     } else {
         chrome.browserAction.setBadgeText({text : ''});
     }
     // show active, online, offline status
-    var icon = {path : 'png/offline.png'};
+    var icon = {path : '../png/offline.png'};
     if(online) {
         // at least online
-        icon.path = 'png/online.png';
-        var active = buildbot.builders.filter(function(item) {
-            return item.current.className.search('building') > -1;
-        });
-        if(active.length) {
-            // actively building
-            icon.path = 'png/active.png';
+        icon.path = '../png/online.png';
+        for(key in buildbot.builders) {
+            if(buildbot.builders[key].state === 'building') {
+                // actively building
+                icon.path = '../png/active.png';
+                break;
+            }
         }
     }
     chrome.browserAction.setIcon(icon);
+    // schedule next update
+    scheduleUpdate(false);
 }
 
 function handleError(err) {
@@ -61,54 +67,56 @@ function handleError(err) {
 }
 
 function parseBuilders(xhr) {
-    document.getElementById('eval').innerHTML = xhr.responseText;
-    var tds = document.getElementsByTagName('td');
-    if(tds.length == 0) {
-        // no response
+    try {
+        _fetch.builders = JSON.parse(xhr.responseText);
+    } catch(e) {
         online = false;
         updateStatus();
         return;
     }
-    var builders = [];
-    for(var i=0; i < tds.length; i+=3) {    
-        var nameNode = tds[i];
-        var name = nameNode.textContent;
-        var a = nameNode.getElementsByTagName('a')[0];
-        var pathname = a.pathname;
-        var lastNode = tds[i+1];
-        var last = {};
-        last.className = lastNode.className;
-        last.label = lastNode.textContent;
-        a = lastNode.getElementsByTagName('a')[0];
-        if(a) {
-            last.pathname = a.pathname;
-        } else {
-            last.pathname = null;
-        }
-        var currNode = tds[i+2];
-        var curr = {};
-        curr.className = currNode.className;
-        curr.label = currNode.textContent;
-        builders.push({name: name, pathname : pathname, current : curr, last : last});
+    // build request for last build of each builder
+    var path = '/json/builders/?';
+    for(var name in _fetch.builders) {
+        var info = _fetch.builders[name];
+        if(!info.cachedBuilds.length) continue;
+        path += 'select='+name+'/builds/-1&';
     }
+    _get(baseUrl+path, parseLastBuild);
+}
+
+function parseLastBuild(xhr) {
+    try {
+        _fetch.lastBuild = JSON.parse(xhr.responseText);
+    } catch(e) {
+        online = false;
+        updateStatus();
+        return;
+    }
+    // move fetch to latest status
     online = true;
+    buildbot = _fetch;
+    _fetch = {};
     buildbot.date = (new Date()).toString();
-    buildbot.builders = builders;
+    console.log(buildbot);
+    // save the last successful fetch
     serialize();
     updateStatus();
 }
 
 function checkStatus() {
-    _get(baseUrl+'/builders/', parseBuilders);
+    _get(baseUrl+'/json/builders', parseBuilders);
 }
 
-function scheduleUpdate() {
-    if(token) clearInterval(token);
+function scheduleUpdate(immediate) {
+    if(_token) clearTimeout(_token);
     baseUrl = localStorage['baseUrl'];
     if(baseUrl) {
-        checkStatus();
-        var freq = localStorage['frequency'];
-        token = setInterval(checkStatus, freq*1000);
+        if(immediate) {
+            checkStatus();
+        } else {
+            var freq = localStorage['frequency'] || 30;
+            _token = setTimeout(checkStatus, freq*1000);
+        }
     } else {
         delete localStorage['buildbot'];
         buildbot = {};
@@ -129,5 +137,5 @@ function _get(url, callback) {
 
 window.onload = function() {
     unserialize();
-    scheduleUpdate();
+    scheduleUpdate(true);
 };
