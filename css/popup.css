@@ -48,7 +48,8 @@ body.offline {
 }
 
 #builders .building {
-    -webkit-box-shadow: 2px 2px 3px #333;
+    background-color: #ffffdd;
+    -webkit-box-shadow: 1px 1px 1px #333;
 }
 
 #date {

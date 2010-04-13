@@ -18,7 +18,6 @@ function unserialize() {
 
 function serialize() {
     var json = JSON.stringify(buildbot);
-    console.log(json);
     localStorage['buildbot'] = json;
 }
 
