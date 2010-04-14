@@ -80,7 +80,7 @@ function buildBuilders(bg, template) {
             // eta of current build
             if(lastBuild.eta !== null) {
                 var min = lastBuild.eta / 60.0;
-                args.eta = (min < 1) ? '< 1 min' : Math.round(min) + ' min';
+                args.eta = (min < 1 && min > 0) ? '< 1 min' : Math.round(min) + ' min';
             }
         }
         var html = template(args);
