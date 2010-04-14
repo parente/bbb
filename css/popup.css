@@ -25,10 +25,11 @@ body.offline {
     background-color: #ddd;
 }
 
-#builders div {
+#builders .builder {
     margin: 5px 0px;
     border: 1px solid gray;
     -webkit-border-radius: 2px;
+    padding: 3px;
 }
 
 #builders .success {
@@ -48,8 +49,23 @@ body.offline {
 }
 
 #builders .building {
-    background-color: #ffffdd;
+    background-color: #ccddff;
     -webkit-box-shadow: 1px 1px 1px #333;
+}
+
+#builders table {
+    border-spacing: 0px;
+    width: 100%;
+}
+
+#builders .revision {
+    text-align: right;
+}
+
+#builders .eta {
+    text-align: center;
+    width: 100%;
+    color: #999;
 }
 
 #date {

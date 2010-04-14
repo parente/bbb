@@ -6,36 +6,28 @@ function buildDate(bg) {
 }
 
 function buildLinks(bg) {
-    // builders
-    var links = document.getElementById('links');
-    var a = document.createElement('a');
-    a.href = bg.baseUrl + '/builders';
-    a.textContent = chrome.i18n.getMessage('extBuildersLabel');
-    a.target = '_blank';
-    links.appendChild(a);
-    // waterfall
-    var space = document.createTextNode(' | ');
-    links.appendChild(space);
-    a = document.createElement('a');
-    a.href = bg.baseUrl + '/waterfall';
-    a.textContent = chrome.i18n.getMessage('extWaterfallLabel');
-    a.target = '_blank';
-    links.appendChild(a);
-    // console
-    space = document.createTextNode(' | ');
-    links.appendChild(space);
-    a = document.createElement('a');
-    a.href = bg.baseUrl + '/console';
-    a.textContent = chrome.i18n.getMessage('extConsoleLabel');
-    a.target = '_blank';
-    links.appendChild(a);
+    var links = {
+        '/builders' : 'extBuildersLabel',
+        '/waterfall' : 'extWaterfallLabel',
+        '/console' : 'extConsoleLabel'
+    };
+    var parent = $('#links');
+    $.each(links, function(key, value) {
+        var a = $(document.createElement('a'))
+            .attr({
+                href : bg.baseUrl + key,
+                target : '_blank'
+            })
+            .text(chrome.i18n.getMessage(value));
+        parent.append(a);
+        parent.append(' | ');
+    });
 }
 
-function buildBuilders(bg) {
+function buildBuilders(bg, template) {
     // reset builders
     var lastBuild;
-    var buildersNode = document.getElementById('builders');
-    buildersNode.innerHTML = '';
+    var buildersNode = $('#builders').html('');
     var model = bg.buildbot;
     // show builder status
     for(var key in model.builders) {
@@ -45,6 +37,55 @@ function buildBuilders(bg) {
         } catch(e) {
             lastBuild = null;
         }
+        var args = {
+            revision : '',
+            eta : '',
+            result : '',
+            baseUrl : bg.baseUrl,
+            buildNum : -1
+        };
+        // name of the builder
+        args.name = key;
+        // status as css class
+        args.className = info.state;
+        if(lastBuild && lastBuild.text) {
+            if(lastBuild.text[0] == 'warnings') {
+                args.className += ' warnings';
+            } else if(lastBuild.text[0] == 'failed') {
+                args.className += ' failure';
+            } else if(lastBuild.results == 0) {
+                args.className += ' success';
+            }
+        } 
+
+        if(lastBuild) {
+            // build number
+            args.buildNum = lastBuild.number;
+            // look for fetched rev
+            var rev = '?';
+            $.each(lastBuild.properties, function(i, value) {
+                if(value[0] == 'got_revision') {
+                    rev = value[1];
+                    return false;
+                }
+            });
+            // revision number
+            args.revision = 'r'+rev;
+            // result of last build
+            if(lastBuild.currentStep) {
+                args.result = lastBuild.currentStep.text.join(' ');
+            } else {
+                args.result = lastBuild.text.join(' ');
+            }
+            // eta of current build
+            if(lastBuild.eta !== null) {
+                var min = lastBuild.eta / 60.0;
+                args.eta = (min < 1) ? '< 1 min' : Math.round(min) + ' min';
+            }
+        }
+        var html = template(args);
+        buildersNode.append(html);
+        /*
         var div = document.createElement('div');
         div.className = 'builder';
         var name = document.createElement('a');
@@ -95,16 +136,23 @@ function buildBuilders(bg) {
             }
         } 
         div.className = className;
-        buildersNode.appendChild(div);
+        buildersNode.appendChild(div);*/
     }
 }
 
 window.onload = function() {
+    _.templateSettings = {
+        start       : '{{',
+        end         : '}}',
+        interpolate : /\{\{(.+?)\}\}/g
+    };
     var bg = chrome.extension.getBackgroundPage();
     document.body.className = bg.online ? 'online' : 'offline';
     if(bg.baseUrl) {
         buildLinks(bg);
-        buildBuilders(bg);
+        $.get('../templates/builder.html', function(html) {
+            buildBuilders(bg, _.template(html));
+        });
         buildDate(bg);
     } else {
         var msg = document.getElementById('date');
