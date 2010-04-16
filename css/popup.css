@@ -33,11 +33,11 @@ body.offline {
 }
 
 #builders .success {
-    background-color: lightgreen;
+    background-color: #ddffdd;
 }
 
 #builders .failure {
-    background-color: pink;
+    background-color: #ffdddd;
 }
 
 #builders .warnings {
@@ -49,7 +49,7 @@ body.offline {
 }
 
 #builders .building {
-    background-color: #ccddff;
+    background-color: #ddddff;
     -webkit-box-shadow: 1px 1px 1px #333;
 }
 
@@ -66,6 +66,34 @@ body.offline {
     text-align: center;
     width: 100%;
     color: #999;
+}
+
+#builders .steps table {
+    width: auto;
+    border-collapse: collapse;
+}
+
+#builders .steps td {
+    width: 10px;
+    height: 10px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+#builders .steps .pending {
+    background-color: white;
+}
+
+#builders .steps .success {
+    background-color: lightgreen;
+}
+
+#builders .steps .failure {
+    background-color: pink;
+}
+
+#builders .steps .running {
+    background-color: #ffffaa;
 }
 
 #date {

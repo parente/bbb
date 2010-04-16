@@ -44,7 +44,8 @@ function buildBuilders(bg, template) {
             eta : '',
             result : '',
             baseUrl : bg.baseUrl,
-            buildNum : -1
+            buildNum : -1,
+            steps: []
         };
         // name of the builder
         args.name = key;
@@ -84,7 +85,10 @@ function buildBuilders(bg, template) {
                 var min = lastBuild.eta / 60.0;
                 args.eta = (min < 1 && min > 0) ? '< 1 min' : Math.round(min) + ' min';
             }
+            // steps
+            args.steps = lastBuild.steps;
         }
+        // render the template
         var html = template(args);
         buildersNode.append(html);
     }
@@ -112,12 +116,13 @@ function onBuildbotUpdate(delay) {
     });
 }
 
+function onClickStep(builderName, buildNum, stepName) {
+    var bg = chrome.extension.getBackgroundPage();
+    var url = bg.baseUrl + encodeURI('/builders/'+builderName+'/builds/'+buildNum+'/steps/'+stepName);
+    var args = {url : url, selected : true};
+    chrome.tabs.create(args);
+}
+
 window.onload = function() {
-    _.templateSettings = {
-        start       : '{{',
-        end         : '}}',
-        interpolate : /\{\{(.+?)\}\}/g
-    };
-    // for a render now
     onBuildbotUpdate(0);
 };

@@ -15,6 +15,7 @@
   "options_page": "html/options.html",
   "default_locale" : "en",
   "permissions": [
+    "tabs",
     "http://*/"
   ]
 }

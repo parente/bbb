@@ -1,15 +1,42 @@
-<div class="builder {{ className }}">
+<div class="builder <%= className %>">
   <table>
     <tbody>
       <tr>
-        <td class="name"><a href="{{ baseUrl }}/builders/{{ name }}" target="_blank">{{ name }}</a></td>
-        <td class="eta">{{ eta }}</td>
+        <td class="name"><a href="<%= baseUrl %>/builders/<%= name %>" target="_blank"><%= name %></a></td>
+        <td class="eta"><%= eta %></td>
         <td class="revision">
-          <a style="{{ buildNum ? '' : 'display: none' }}" href="{{ baseUrl }}/builders/{{ name }}/builds/{{ buildNum }}" target="_blank">{{ revision }}</a>
+          <a style="<%= buildNum ? '' : 'display: none' %>" href="<%= baseUrl %>/builders/<%= name %>/builds/<%= buildNum %>" target="_blank"><%= revision %></a>
         </td>
       </tr>
       <tr>
-        <td class="result" colspan="3">{{ result }}</td>
+        <td class="result" colspan="3"><%= result %></td>
+      </tr>
+      <tr>
+        <td class="steps" colspan="3">
+          <table>
+            <tbody>
+              <tr id="<%= name %>_steps">
+                <% $.each(steps, function(i, step) {
+                  var cls = '';
+                  if(step.isFinished) {
+                    if(step.results[0] === 0) {
+                      cls = 'success';
+                    } else {
+                      cls = 'failure';
+                    }
+                  } else if(step.isStarted) {
+                    cls = 'running';
+                  } else {
+                    cls = 'pending';
+                  }
+                  var url = baseUrl+'/builders/'+name+'/builds/'+buildNum;
+                %>
+                <td class="step <%= cls %>" title="<%= step.name%>" onclick="onClickStep('<%= name %>', '<%= buildNum %>', '<%= step.name %>');"></td>
+                <% }); %>
+              </tr>
+            </tbody>
+          </table>
+        </td>
       </tr>
     </tbody>
 </div>
