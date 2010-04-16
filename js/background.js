@@ -32,8 +32,10 @@ function updateStatus() {
     chrome.browserAction.setTitle(title);
     // set the badge text
     var fails = 0;
-    for(key in buildbot.lastBuild) {
-        fails += (buildbot.lastBuild[key].builds['-1'].results) ? 1 : 0;
+    if(buildbot.lastBuild) {
+        for(key in buildbot.lastBuild) {
+            fails += (buildbot.lastBuild[key].builds['-1'].results) ? 1 : 0;
+        }
     }
     if(fails > 0) {
         var badge = {text : String(fails)};
@@ -53,10 +55,18 @@ function updateStatus() {
                 break;
             }
         }
+        // notify other views
+        var views = chrome.extension.getViews();
+        $.each(views, function(i, view) {
+            try {
+                view.onBuildbotUpdate();
+            } catch(e) {
+            }
+        });
+        // schedule next update
+        scheduleUpdate(false);
     }
     chrome.browserAction.setIcon(icon);
-    // schedule next update
-    scheduleUpdate(false);
 }
 
 function handleError(err) {
@@ -96,7 +106,6 @@ function parseLastBuild(xhr) {
     buildbot = _fetch;
     _fetch = {};
     buildbot.date = (new Date()).toString();
-    console.log(buildbot);
     // save the last successful fetch
     serialize();
     updateStatus();
@@ -119,6 +128,8 @@ function scheduleUpdate(immediate) {
     } else {
         delete localStorage['buildbot'];
         buildbot = {};
+        online = false;
+        updateStatus();
     }
 }
 

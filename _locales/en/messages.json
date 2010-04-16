@@ -32,7 +32,7 @@
         "description" : "Label for console link in popup"
     },
     "extEmptyLabel" : {
-        "message" : "Unknown buildbot URL. See options.",
+        "message" : "Set buildbot URL in Options.",
         "description" : "Label for prompt in popup."
     }
 }

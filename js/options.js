@@ -15,7 +15,7 @@ function _showStatus() {
         token = null;
     }, 3000);
     var bg = chrome.extension.getBackgroundPage();
-    bg.scheduleUpdate();
+    bg.scheduleUpdate(true);
 }
 
 window.onload = function() {
