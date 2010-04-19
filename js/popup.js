@@ -52,13 +52,8 @@ function buildBuilders(bg, template) {
         // status as css class
         args.className = info.state;
         if(lastBuild && lastBuild.text) {
-            if(lastBuild.text[0] == 'warnings') {
-                args.className += ' warnings';
-            } else if(lastBuild.text[0] == 'failed') {
-                args.className += ' failure';
-            } else if(lastBuild.results == 0) {
-                args.className += ' success';
-            }
+            var outcomes = ['success', 'warnings', 'failure', null, 'exception'];
+            args.className += ' ' + outcomes[lastBuild.results];
         } 
 
         if(lastBuild) {

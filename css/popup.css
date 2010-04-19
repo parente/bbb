@@ -37,11 +37,15 @@ body.offline {
 }
 
 #builders .failure {
-    background-color: #ffdddd;
+    background-color: #ffe0e0;
 }
 
 #builders .warnings {
-    background-color: orange;
+    background-color: #f7ce80;
+}
+
+#builders .exception {
+    background-color: #d1a9c7;
 }
 
 #builders .offline {
@@ -49,7 +53,7 @@ body.offline {
 }
 
 #builders .building {
-    background-color: #ddddff;
+    background-color: #ddeeff;
     -webkit-box-shadow: 1px 1px 1px #333;
 }
 
@@ -90,6 +94,14 @@ body.offline {
 
 #builders .steps .failure {
     background-color: pink;
+}
+
+#builders .steps .warnings {
+    background-color: orange;
+}
+
+#builders .steps .exception {
+    background-color: purple;
 }
 
 #builders .steps .running {

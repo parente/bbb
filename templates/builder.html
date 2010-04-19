@@ -16,14 +16,12 @@
           <table>
             <tbody>
               <tr id="<%= name %>_steps">
-                <% $.each(steps, function(i, step) {
-                  var cls = '';
+                <% 
+                var outcomes = ['success', 'warnings', 'failure', null, 'exception'];
+                $.each(steps, function(i, step) {
+                  var cls = '';                  
                   if(step.isFinished) {
-                    if(step.results[0] === 0) {
-                      cls = 'success';
-                    } else {
-                      cls = 'failure';
-                    }
+                    cls = outcomes[step.results[0]];
                   } else if(step.isStarted) {
                     cls = 'running';
                   } else {
