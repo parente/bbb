@@ -63,10 +63,10 @@ function updateStatus() {
             } catch(e) {
             }
         });
-        // schedule next update
-        scheduleUpdate(false);
     }
     chrome.browserAction.setIcon(icon);
+    // schedule next update
+    scheduleUpdate(false);
 }
 
 function handleError(err) {
