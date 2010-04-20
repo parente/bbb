@@ -21,6 +21,45 @@ function serialize() {
     localStorage['buildbot'] = json;
 }
 
+function diffStatus() {
+    var diff = {};
+    $.each(_fetch.builders, function(name, info) {
+        var df = {};
+        // current and old builder state
+        df.state = info.state;
+        try {
+            df.oldState = buildbot.builders[name].state;
+        } catch(e) {
+            df.oldState = null;
+        }
+        // current and old build number
+        try {
+            df.number = _fetch.lastBuild[name].builds['-1'].number;
+        } catch(e) {
+            df.number = null;
+        }
+        try {
+            df.oldNumber = buildbot.lastBuild[name].builds['-1'].number;
+        } catch(e) {
+            df.oldNumber = null;
+        }
+        // current and old results
+        try {
+            df.results = _fetch.lastBuild[name].builds['-1'].results;
+        } catch(e) {
+            df.results = null;
+        }                
+        try {
+            df.oldResults = buildbot.lastBuild[name].builds['-1'].results;
+        } catch(e) {
+            df.oldResults = null;
+        }
+        diff[name] = df;
+    });
+    // @todo: catch builders that went away too?
+    return diff;
+}
+
 function updateStatus() {
     // set the button title
     var title = {}, key, count;
@@ -65,6 +104,7 @@ function updateStatus() {
         });
     }
     chrome.browserAction.setIcon(icon);
+
     // schedule next update
     scheduleUpdate(false);
 }
@@ -101,11 +141,14 @@ function parseLastBuild(xhr) {
         updateStatus();
         return;
     }
+    // diff with last status
+    var diff = diffStatus();
     // move fetch to latest status
     online = true;
     buildbot = _fetch;
     _fetch = {};
     buildbot.date = (new Date()).toString();
+    buildbot.diff = diff;
     // save the last successful fetch
     serialize();
     updateStatus();
