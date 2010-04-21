@@ -3,6 +3,11 @@ var online = false;
 var buildbot = {};
 var _token = null;
 var _fetch = {};
+var _sounds = {
+    1: 'startSound',
+    2: 'passSound',
+    4: 'failSound'
+};
 
 function unserialize() {
     try {
@@ -87,11 +92,36 @@ function updateStatus() {
     if(online) {
         // at least online
         icon.path = '../png/online.png';
-        for(key in buildbot.builders) {
-            if(buildbot.builders[key].state === 'building') {
+        $.each(buildbot.builders, function(name, info) {
+            if(info.state === 'building') {
                 // actively building
                 icon.path = '../png/active.png';
-                break;
+                return false;
+            }
+        });
+        // sonify latest diff
+        if(localStorage['sounds']) {
+            var notice = 0;
+            $.each(buildbot.diff, function(name, diff) {
+                if(diff.number > diff.oldNumber) {
+                    // builder changed
+                    if(diff.status == 'building') {
+                        // started a new build
+                        notice |= 1;
+                    } else if(diff.status == 'idle') {
+                        if(!diff.results) {
+                            notice |= 2;
+                        } else {
+                            notice |= 4;
+                        }
+                    }
+                }
+            });
+            var id = _sounds[notice];
+            if(id) {
+                var node = document.getElementById(id);
+                node.load();
+                node.play();     
             }
         }
         // notify other views
@@ -104,7 +134,6 @@ function updateStatus() {
         });
     }
     chrome.browserAction.setIcon(icon);
-
     // schedule next update
     scheduleUpdate(false);
 }

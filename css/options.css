@@ -41,8 +41,13 @@ input {
     width: 300px;
 }
 
+input[type="checkbox"] {
+    margin: 0px;
+    margin-top: 6px;
+}
+
 .actions {
-    margin-top: 60px;
+    margin-top: 40px;
     padding-top: 10px;
     border-top: 1px solid #ddd;
     text-align: right;
