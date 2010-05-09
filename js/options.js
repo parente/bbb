@@ -22,4 +22,5 @@ function _showStatus() {
 window.onload = function() {
     document.getElementById('baseUrl').value = localStorage['baseUrl'] || '';
     document.getElementById('frequency').value = localStorage['frequency'] || '30';
+    document.getElementById('sounds').checked = localStorage['sounds'] || false;
 }

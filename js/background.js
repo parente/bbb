@@ -6,10 +6,118 @@ var _fetch = {};
 var _sounds = {
     1: 'startSound',
     2: 'passSound',
-    4: 'failSound'
+    3: 'passSound',
+    4: 'failSound',
+    5: 'failSound',
+    6: 'failSound',
+    7: 'failSound'
 };
 
-function unserialize() {
+function _setButtonTitle() {
+    // set the button title
+    var title = {}, key, count;
+    if(online) {
+        title.title = chrome.i18n.getMessage('extOnlineTitle');
+    } else {
+        title.title = chrome.i18n.getMessage('extOfflineTitle');
+    }
+    chrome.browserAction.setTitle(title);    
+}
+
+function _setBadgeText() {
+    // set the badge text
+    var fails = 0;
+    if(buildbot.lastBuild) {
+        $.each(buildbot.lastBuild, function(name, info) {
+            fails += (info.builds['-1'].results) ? 1 : 0;
+        });
+    }
+    if(fails > 0) {
+        var badge = {text : String(fails)};
+        chrome.browserAction.setBadgeText(badge);
+    } else {
+        chrome.browserAction.setBadgeText({text : ''});
+    }    
+}
+
+function _setButtonIcon() {
+    // show active, online, offline status
+    var icon = {path : '../png/offline.png'};
+    if(online) {
+        // at least online
+        icon.path = '../png/online.png';
+        $.each(buildbot.builders, function(name, info) {
+            if(info.state === 'building') {
+                // actively building
+                icon.path = '../png/active.png';
+                return false;
+            }
+        });
+    }
+    chrome.browserAction.setIcon(icon);
+}
+
+function _sonifyDiff() {
+    // abort if sounds diabled or not online
+    if(!online || !localStorage['sounds']) {return;}
+    var notice = 0;
+    $.each(buildbot.diff, function(name, diff) {
+        console.debug(diff.number, diff.oldNumber);
+        console.debug(diff.state, diff.oldState);
+        if(diff.number > diff.oldNumber) {
+            // new build started
+            if(diff.state == 'building') {
+                // currently building it
+                notice |= 1;
+            } else if(diff.state == 'idle') {
+                // it already finished
+                if(!diff.results) {
+                    notice |= 2;
+                } else {
+                    notice |= 4;
+                }
+            }
+        } else if(diff.oldState == 'building' && diff.state != 'building') {
+            // builder finished a build
+            if(!diff.results) {
+                notice |= 2;
+            } else {
+                notice |= 4;
+            }
+        }
+        // @todo: do we have to check results too?
+    });
+    var id = _sounds[notice];
+    console.log('notice: '+notice);
+    console.log('sound: '+id);
+    if(id) {
+        var node = document.getElementById(id);
+        node.load();
+        node.play();     
+    }
+}
+
+function _notifyViews() {
+    // notify other views
+    var views = chrome.extension.getViews();
+    $.each(views, function(i, view) {
+        try {
+            view.onBuildbotUpdate();
+        } catch(e) {
+        }
+    });
+}
+
+function _updateStatus() {
+    _setButtonTitle();
+    _setBadgeText();
+    _setButtonIcon();    
+    _sonifyDiff();
+    _notifyViews();
+    scheduleUpdate(false);
+}
+
+function _unserialize() {
     try {
         var json = localStorage['buildbot'];
         buildbot = JSON.parse(json);
@@ -21,12 +129,12 @@ function unserialize() {
     }
 }
 
-function serialize() {
+function _serialize() {
     var json = JSON.stringify(buildbot);
     localStorage['buildbot'] = json;
 }
 
-function diffStatus() {
+function _diffLastBuild() {
     var diff = {};
     $.each(_fetch.builders, function(name, info) {
         var df = {};
@@ -65,91 +173,18 @@ function diffStatus() {
     return diff;
 }
 
-function updateStatus() {
-    // set the button title
-    var title = {}, key, count;
-    if(online) {
-        title.title = chrome.i18n.getMessage('extOnlineTitle');
-    } else {
-        title.title = chrome.i18n.getMessage('extOfflineTitle');
-    }
-    chrome.browserAction.setTitle(title);
-    // set the badge text
-    var fails = 0;
-    if(buildbot.lastBuild) {
-        for(key in buildbot.lastBuild) {
-            fails += (buildbot.lastBuild[key].builds['-1'].results) ? 1 : 0;
-        }
-    }
-    if(fails > 0) {
-        var badge = {text : String(fails)};
-        chrome.browserAction.setBadgeText(badge);
-    } else {
-        chrome.browserAction.setBadgeText({text : ''});
-    }
-    // show active, online, offline status
-    var icon = {path : '../png/offline.png'};
-    if(online) {
-        // at least online
-        icon.path = '../png/online.png';
-        $.each(buildbot.builders, function(name, info) {
-            if(info.state === 'building') {
-                // actively building
-                icon.path = '../png/active.png';
-                return false;
-            }
-        });
-        // sonify latest diff
-        if(localStorage['sounds']) {
-            var notice = 0;
-            $.each(buildbot.diff, function(name, diff) {
-                if(diff.number > diff.oldNumber) {
-                    // builder changed
-                    if(diff.status == 'building') {
-                        // started a new build
-                        notice |= 1;
-                    } else if(diff.status == 'idle') {
-                        if(!diff.results) {
-                            notice |= 2;
-                        } else {
-                            notice |= 4;
-                        }
-                    }
-                }
-            });
-            var id = _sounds[notice];
-            if(id) {
-                var node = document.getElementById(id);
-                node.load();
-                node.play();     
-            }
-        }
-        // notify other views
-        var views = chrome.extension.getViews();
-        $.each(views, function(i, view) {
-            try {
-                view.onBuildbotUpdate();
-            } catch(e) {
-            }
-        });
-    }
-    chrome.browserAction.setIcon(icon);
-    // schedule next update
-    scheduleUpdate(false);
-}
-
-function handleError(err) {
+function _handleError(err) {
     console.error(err);
     online = false;
-    updateStatus();
+    _updateStatus();
 }
 
-function parseBuilders(xhr) {
+function _handleBuilders(xhr) {
     try {
         _fetch.builders = JSON.parse(xhr.responseText);
     } catch(e) {
         online = false;
-        updateStatus();
+        _updateStatus();
         return;
     }
     // build request for last build of each builder
@@ -159,19 +194,19 @@ function parseBuilders(xhr) {
         if(!info.cachedBuilds.length) continue;
         path += 'select='+name+'/builds/-1&';
     }
-    _get(baseUrl+path, parseLastBuild);
+    _get(baseUrl+path, _handleLastBuild);
 }
 
-function parseLastBuild(xhr) {
+function _handleLastBuild(xhr) {
     try {
         _fetch.lastBuild = JSON.parse(xhr.responseText);
     } catch(e) {
         online = false;
-        updateStatus();
+        _updateStatus();
         return;
     }
     // diff with last status
-    var diff = diffStatus();
+    var diff = _diffLastBuild();
     // move fetch to latest status
     online = true;
     buildbot = _fetch;
@@ -179,12 +214,12 @@ function parseLastBuild(xhr) {
     buildbot.date = (new Date()).toString();
     buildbot.diff = diff;
     // save the last successful fetch
-    serialize();
-    updateStatus();
+    _serialize();
+    _updateStatus();
 }
 
-function checkStatus() {
-    _get(baseUrl+'/json/builders', parseBuilders);
+function _checkStatus() {
+    _get(baseUrl+'/json/builders', _handleBuilders);
 }
 
 function scheduleUpdate(immediate) {
@@ -192,22 +227,22 @@ function scheduleUpdate(immediate) {
     baseUrl = localStorage['baseUrl'];
     if(baseUrl) {
         if(immediate) {
-            checkStatus();
+            _checkStatus();
         } else {
             var freq = localStorage['frequency'] || 30;
-            _token = setTimeout(checkStatus, freq*1000);
+            _token = setTimeout(_checkStatus, freq*1000);
         }
     } else {
         delete localStorage['buildbot'];
         buildbot = {};
         online = false;
-        updateStatus();
+        _updateStatus();
     }
 }
 
 function _get(url, callback) {
     var xhr = new XMLHttpRequest();
-    xhr.onerror = handleError;
+    xhr.onerror = _handleError;
     xhr.onreadystatechange = function(state) {
         if(xhr.readyState == 4) {
             callback(xhr);
@@ -218,6 +253,6 @@ function _get(url, callback) {
 }
 
 window.onload = function() {
-    unserialize();
+    _unserialize();
     scheduleUpdate(true);
 };
