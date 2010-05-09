@@ -62,8 +62,6 @@ function _sonifyDiff() {
     if(!online || !localStorage['sounds']) {return;}
     var notice = 0;
     $.each(buildbot.diff, function(name, diff) {
-        console.debug(diff.number, diff.oldNumber);
-        console.debug(diff.state, diff.oldState);
         if(diff.number > diff.oldNumber) {
             // new build started
             if(diff.state == 'building') {
@@ -88,8 +86,6 @@ function _sonifyDiff() {
         // @todo: do we have to check results too?
     });
     var id = _sounds[notice];
-    console.log('notice: '+notice);
-    console.log('sound: '+id);
     if(id) {
         var node = document.getElementById(id);
         node.load();
