@@ -9,17 +9,19 @@
   <body>
     <div class="box">
       <h1>Buildbot Button Options</h1>
-      <label for="baseUrl">Base URL</label>
-      <input type="text" id="baseUrl" /><br clear="all"/>
-      <label for="frequency">Frequency</label>
-      <input type="text" id="frequency" /><br clear="all"/>
-      <label for="sounds">Sounds</label>
-      <input type="checkbox" id="sounds" /><br clear="all"/>
-      <div class="actions">
-        <span id="status" style="visibility: hidden;">Options saved</span>
-        <button type="submit" onclick="onSave(); window.close();">OK</button>
-        <button type="cancel" onclick="window.close();">Cancel</button>
-      </div>
+      <form target="#" onsubmit="return false;">
+        <label for="baseUrl">Base URL</label>
+        <input type="text" id="baseUrl" /><br clear="all"/>
+        <label for="frequency">Frequency</label>
+        <input type="text" id="frequency" /><br clear="all"/>
+        <label for="sounds">Sounds</label>
+        <input type="checkbox" id="sounds" /><br clear="all"/>
+        <div class="actions">
+          <span id="status" style="visibility: hidden;">Options saved</span>
+          <button type="submit" onclick="onSave(); window.close();">OK</button>
+          <button type="cancel" onclick="window.close();">Cancel</button>
+        </div>
+      </form>
     </div>
   </body>
 </html>
