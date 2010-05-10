@@ -1,3 +1,9 @@
+/*
+ * Buildbot Button Chrome Extension
+ *
+ * Copyright 2010, Peter Parente. All rights reserved.
+ * http://creativecommons.org/licenses/BSD/
+ */
 function buildDate(bg) {
     var label = document.getElementById('date-label');
     label.textContent = chrome.i18n.getMessage('extDateLabel');

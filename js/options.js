@@ -1,3 +1,9 @@
+/*
+ * Buildbot Button Chrome Extension
+ *
+ * Copyright 2010, Peter Parente. All rights reserved.
+ * http://creativecommons.org/licenses/BSD/
+ */
 var token = null;
 
 function onSave() {
