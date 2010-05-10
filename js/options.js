@@ -1,7 +1,12 @@
 var token = null;
 
 function onSave() {
-    localStorage['baseUrl'] = document.getElementById('baseUrl').value;
+    var url = document.getElementById('baseUrl').value;
+    if(url.charAt(url.length-1) == '/') {
+        // strip trailing /
+        url = url.substr(0, url.length-1)
+    }
+    localStorage['baseUrl'] = url;
     localStorage['frequency'] = document.getElementById('frequency').value;
     localStorage['sounds'] = document.getElementById('sounds').checked;
     _showStatus();

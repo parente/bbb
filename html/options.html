@@ -11,11 +11,11 @@
       <h1>Buildbot Button Options</h1>
       <form target="#" onsubmit="return false;">
         <label for="baseUrl">Base URL</label>
-        <input type="text" id="baseUrl" /><br clear="all"/>
+        <input type="text" id="baseUrl" title="URL to the root of the buildbot server"/><br clear="all"/>
         <label for="frequency">Frequency</label>
-        <input type="text" id="frequency" /><br clear="all"/>
+        <input type="text" id="frequency" title="Wait this many seconds between server queries"/><br clear="all"/>
         <label for="sounds">Sounds</label>
-        <input type="checkbox" id="sounds" /><br clear="all"/>
+        <input type="checkbox" id="sounds" title="Play sounds on build start, success, or failure"/><br clear="all"/>
         <div class="actions">
           <span id="status" style="visibility: hidden;">Options saved</span>
           <button type="submit" onclick="onSave(); window.close();">OK</button>
