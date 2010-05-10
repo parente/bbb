@@ -1,6 +1,7 @@
 var baseUrl = null;
 var online = false;
 var buildbot = {};
+var lastXHR = null;
 var _token = null;
 var _fetch = {};
 var _sounds = {
@@ -170,17 +171,17 @@ function _diffLastBuild() {
 }
 
 function _handleError(err) {
-    console.error(err);
+    delete localStorage['buildbot'];
+    buildbot = {};
     online = false;
-    _updateStatus();
+    _updateStatus(); 
 }
 
 function _handleBuilders(xhr) {
     try {
         _fetch.builders = JSON.parse(xhr.responseText);
     } catch(e) {
-        online = false;
-        _updateStatus();
+        _handleError(e);
         return;
     }
     // build request for last build of each builder
@@ -197,8 +198,7 @@ function _handleLastBuild(xhr) {
     try {
         _fetch.lastBuild = JSON.parse(xhr.responseText);
     } catch(e) {
-        online = false;
-        _updateStatus();
+        _handleError(e);
         return;
     }
     // diff with last status
@@ -238,7 +238,8 @@ function scheduleUpdate(immediate) {
 
 function _get(url, callback) {
     var xhr = new XMLHttpRequest();
-    xhr.onerror = _handleError;
+    lastXHR = xhr;
+    //xhr.onerror = _handleError;
     xhr.onreadystatechange = function(state) {
         if(xhr.readyState == 4) {
             callback(xhr);

@@ -22,7 +22,7 @@ body.online {
 }
 
 body.offline {
-    background-color: #ddd;
+    background-color: #eee;
 }
 
 #builders .builder {

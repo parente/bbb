@@ -94,7 +94,7 @@ function onBuildbotUpdate(delay) {
     $('body').fadeOut(delay, function() {
         var bg = chrome.extension.getBackgroundPage();
         document.body.className = bg.online ? 'online' : 'offline';
-        if(bg.baseUrl) {
+        if(bg.online) {
             buildLinks(bg);
             $.get('../templates/builder.html', function(html) {
                 buildBuilders(bg, _.template(html));
@@ -105,7 +105,11 @@ function onBuildbotUpdate(delay) {
             $('links').html('');
             $('builders').html('');
             var msg = document.getElementById('date');
-            msg.innerHTML = chrome.i18n.getMessage('extEmptyLabel');
+            if(!bg.lastXHR || !bg.lastXHR.status) {
+                msg.innerHTML = chrome.i18n.getMessage('extEmptyLabel');
+            } else {
+                msg.innerHTML = bg.lastXHR.status + ': ' + bg.lastXHR.statusText;
+            }
             $('body').fadeIn(delay);
         }
     });
