@@ -13,6 +13,7 @@ function onSave() {
         url = url.substr(0, url.length-1)
     }
     localStorage['baseUrl'] = url;
+    localStorage['builders'] = document.getElementById('builders').value;
     localStorage['frequency'] = document.getElementById('frequency').value;
     localStorage['sounds'] = document.getElementById('sounds').checked;
     _showStatus();
@@ -32,6 +33,7 @@ function _showStatus() {
 
 window.onload = function() {
     document.getElementById('baseUrl').value = localStorage['baseUrl'] || '';
+    document.getElementById('builders').value = localStorage['builders'] || '';
     document.getElementById('frequency').value = localStorage['frequency'] || '30';
     if(localStorage['sounds'] == 'true') {
         document.getElementById('sounds').checked = true;
