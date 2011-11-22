@@ -5,6 +5,7 @@
  * http://creativecommons.org/licenses/BSD/
  */
 var baseUrl = null;
+var builders = null;
 var online = false;
 var buildbot = {};
 var lastXHR = null;
@@ -221,12 +222,17 @@ function _handleLastBuild(xhr) {
 }
 
 function _checkStatus() {
-    _get(baseUrl+'/json/builders', _handleBuilders);
+    var buildersFilter = '';
+    for(builder in builders) {
+        buildersFilter += '&select=' + builders[builder];
+    }
+    _get(baseUrl+'/json/builders/?as_text=0' + buildersFilter, _handleBuilders);
 }
 
 function scheduleUpdate(immediate) {
     if(_token) clearTimeout(_token);
     baseUrl = localStorage['baseUrl'];
+    builders = localStorage['builders'].split(',');
     if(baseUrl) {
         if(immediate) {
             _checkStatus();
